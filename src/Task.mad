@@ -1,0 +1,65 @@
+import type { DateTime } from "Date"
+
+import List from "List"
+import Math from "Math"
+import { fromMaybe } from "Maybe"
+
+import { toIso8601Date } from "@/Date"
+
+
+
+export type ParsedTask = ParsedTask(String, String, List String) | Unparseable
+
+// Task(name, date, effort)
+export type Task = Task(String, DateTime, List Integer) | Impossible
+
+
+reify :: ParsedTask -> Task
+export reify = where {
+  ParsedTask(n, d, e) =>
+    pipe(
+      map(
+        pipe(
+          scan,
+          fromMaybe(0),
+        ),
+      ),
+      (f) => Task(n, toIso8601Date(d), f),
+    )(e)
+
+  _ =>
+    Impossible
+}
+
+topic :: Task -> String
+export topic = where {
+  Task(n, _, _) =>
+    n
+
+  _ =>
+    "?"
+}
+
+date :: Task -> DateTime
+export date = where {
+  Task(_, d, _) =>
+    d
+
+  _ =>
+    toIso8601Date("")
+}
+
+effort :: Task -> List Integer
+export effort = where {
+  Task(_, _, e) =>
+    e
+
+  _ =>
+    []
+}
+
+totalEffort :: Task -> Integer
+export totalEffort = pipe(
+  effort,
+  List.reduce(Math.add, 0),
+)

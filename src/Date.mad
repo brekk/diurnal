@@ -1,0 +1,23 @@
+import type { DateTime } from "Date"
+
+import { fromDateInfo } from "Date"
+import {} from "Integer"
+import { Just } from "Maybe"
+import String from "String"
+
+
+
+// parse dates, not date times
+toIso8601Date :: String -> DateTime
+export toIso8601Date = pipe(
+  String.split("-"),
+  map(scan),
+  where {
+    [Just(year), Just(month), Just(day)] =>
+      ({ year, month, day, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+
+    _ =>
+      ({ year: 0, month: 0, day: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+  },
+  fromDateInfo,
+)

@@ -1,0 +1,24 @@
+import { noop } from "Function"
+import IO from "IO"
+import Wish from "Wish"
+
+import D from "@/Diurnal"
+
+
+
+main = () => {
+  pipe(
+    D.read,
+    map(map(D.reify)),
+    Wish.fulfill(
+      pipe(
+        IO.pTrace("BARF!"),
+        noop,
+      ),
+      pipe(
+        IO.pTrace("READ!"),
+        noop,
+      ),
+    ),
+  )("./dayfile.csv")
+}
