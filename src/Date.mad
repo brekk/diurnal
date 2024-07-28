@@ -1,7 +1,8 @@
 import type { DateTime } from "Date"
 
-import { fromDateInfo } from "Date"
+import { DateTime, fromDateInfo, toISOString } from "Date"
 import {} from "Integer"
+import List from "List"
 import { Just } from "Maybe"
 import String from "String"
 
@@ -20,4 +21,36 @@ export toIso8601Date = pipe(
       ({ year: 0, month: 0, day: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
   },
   fromDateInfo,
+)
+
+toDate :: DateTime -> String
+export toDate = pipe(
+  toISOString,
+  String.slice(0, 10),
+)
+
+// 5138-11-16T09:46:39.999Z
+ISO_8601_MAXIMUM = 99999999999
+// ISO_8601_MINIMUM = -99999999999
+
+bounds :: List DateTime -> #[DateTime, DateTime]
+export bounds = pipe(
+  where {
+    [a, ...z] =>
+      #[a, z]
+
+    [] =>
+      #[DateTime(-1), []]
+  },
+  where {
+    #[a, z] =>
+      List.reduce(
+        (comp, x) => where(comp) {
+          #[least, most] =>
+            #[x < least ? x : least, x > most ? x : most]
+        },
+        #[a, a],
+        z,
+      )
+  },
 )

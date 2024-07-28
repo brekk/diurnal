@@ -1,11 +1,15 @@
 import type { DateTime } from "Date"
 
+import { DateTime } from "Date"
+import Dict from "Dictionary"
+import IO from "IO"
 import List from "List"
 import Math from "Math"
-import { fromMaybe } from "Maybe"
+import { Just, Nothing, fromMaybe } from "Maybe"
 import String from "String"
+import { fst } from "Tuple"
 
-import { toIso8601Date } from "@/Date"
+import { toDate, toIso8601Date } from "@/Date"
 
 
 
@@ -13,6 +17,9 @@ export type ParsedTask = ParsedTask(String, String, List String) | Unparseable
 
 // Task(name, date, effort)
 export type Task = Task(String, DateTime, List Integer) | Impossible
+
+export alias AggregatedDay = #[String, List Integer]
+export alias AggregatedTopic = #[DateTime, List Integer]
 
 
 reify :: ParsedTask -> Task
@@ -65,8 +72,8 @@ export totalEffort = pipe(
   List.reduce(Math.add, 0),
 )
 
-parse :: String -> List ParsedTask
-export parse = pipe(
+parseFile :: String -> List ParsedTask
+export parseFile = pipe(
   String.split("\n"),
   List.reject(String.isEmpty),
   map(
@@ -81,4 +88,90 @@ export parse = pipe(
       },
     ),
   ),
+)
+
+parse :: String -> List Task
+export parse = pipe(
+  parseFile,
+  map(reify),
+)
+
+aggregateByDay :: Task -> AggregatedDay
+export aggregateByDay = where {
+  Task(k, _, v) =>
+    #[k, v]
+
+  Impossible =>
+    #["Unknown", []]
+}
+
+aggregateByTopic :: Task -> AggregatedTopic
+export aggregateByTopic = where {
+  Task(_, t, v) =>
+    #[t, v]
+
+  Impossible =>
+    #[DateTime(0), []]
+}
+
+aggregateDates :: List Task -> Dictionary DateTime (List AggregatedDay)
+export aggregateDates = List.reduce(
+  (dict, task) => {
+    d = date(task)
+    add = aggregateByDay(task)
+    return where(Dict.get(d, dict)) {
+      Nothing =>
+        Dict.insert(d, [add], dict)
+
+      Just(_) =>
+        Dict.update(List.append(add), d, dict)
+    }
+  },
+  Dict.empty,
+)
+
+aggregateTopics :: List Task -> Dictionary String (List AggregatedTopic)
+export aggregateTopics = List.reduce(
+  (dict, task) => {
+    t = topic(task)
+    add = aggregateByTopic(task)
+    return where(Dict.get(t, dict)) {
+      Nothing =>
+        Dict.insert(t, [add], dict)
+
+      Just(_) =>
+        Dict.update(List.append(add), t, dict)
+    }
+  },
+  Dict.empty,
+)
+
+sum = List.reduce(Math.add, 0)
+
+summarizeTopic :: AggregatedTopic -> String
+export summarizeTopic = where {
+  #[d, x] =>
+    `${toDate(d)} for ${
+      pipe(
+        sum,
+        show,
+      )(x)
+    } minutes`
+}
+
+summarizeByTopic :: Dictionary String (List AggregatedTopic) -> String
+export summarizeByTopic = pipe(
+  Dict.toList,
+  map(
+    where {
+      #[t, byDates] =>
+        `${t} on:\n  - ${
+          pipe(
+            map(summarizeTopic),
+            String.join("\n  - "),
+          )(byDates)
+        }`
+    },
+  ),
+  String.join("\n"),
 )

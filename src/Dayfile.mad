@@ -1,14 +1,14 @@
 import type { DateTime } from "Date"
 import type { Error } from "IO"
 
-import type { ParsedTask } from "@/Task"
+import type { ParsedTask, Task } from "@/Task"
 
 import File from "File"
 import List from "List"
 import String from "String"
 import Wish from "Wish"
 
-import { ParsedTask, Unparseable, parse } from "@/Task"
+import { ParsedTask, Task, Unparseable, parse } from "@/Task"
 
 
 
@@ -16,7 +16,9 @@ import { ParsedTask, Unparseable, parse } from "@/Task"
 task,date,minutes,of,effort
 */
 // nominally this is a CSV parser
-read :: String -> Wish Error (List ParsedTask)
+
+// for use as a library
+read :: String -> Wish Error (List Task)
 export read = pipe(
   File.read,
   map(parse),

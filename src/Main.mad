@@ -1,10 +1,17 @@
+import { DateTime, toISOString } from "Date"
+import Dict from "Dictionary"
 import { noop } from "Function"
 import IO from "IO"
+import List from "List"
+import Math from "Math"
+import { fromMaybe } from "Maybe"
 import Wish from "Wish"
 
 import Jam from "Jam"
 
+import Date from "@/Date"
 import D from "@/Diurnal"
+import Task from "@/Task"
 
 
 
@@ -15,16 +22,33 @@ main = () => {
       pipe(
         Jam.value,
         D.parse,
-        map(D.reify),
+        D.aggregateTopics,
       ),
     ),
+    /*
+            map(
+              pipe(
+                Dict.get("running"),
+                IO.pTrace("running?"),
+                fromMaybe([]),
+                map(where { #[d, _] => d }),
+                Date.bounds,
+                where {
+                  #[least, most] =>
+                    #[Date.toDate(least), Date.toDate(most)]
+                },
+              ),
+            ),
+            */
+    map(Task.summarizeByTopic),
     Wish.fulfill(
       pipe(
         IO.pTrace("BARF!"),
         noop,
       ),
       pipe(
-        IO.pTrace("READ!"),
+        // IO.pTrace("READ!"),
+        IO.put,
         noop,
       ),
     ),

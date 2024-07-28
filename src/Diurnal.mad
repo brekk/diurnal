@@ -1,12 +1,14 @@
 import type { ParsedTask } from "@/Task"
 
 import { read } from "@/Dayfile"
-import { parse, reify } from "@/Task"
+import { aggregateDates, aggregateTopics, parse, reify } from "@/Task"
 
 
 
 export reify
 export read
 export parse
+export aggregateDates
+export aggregateTopics
 
 export type DiurnalError a = DiurnalError(a)
