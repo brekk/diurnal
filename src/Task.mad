@@ -2,6 +2,7 @@ import type { DateTime } from "Date"
 
 import { DateTime } from "Date"
 import Dict from "Dictionary"
+import { equals } from "Function"
 import IO from "IO"
 import List from "List"
 import Math from "Math"
@@ -54,7 +55,7 @@ export date = where {
     d
 
   _ =>
-    toIso8601Date("")
+    DateTime(0)
 }
 
 effort :: Task -> List Integer
@@ -66,10 +67,12 @@ export effort = where {
     []
 }
 
+sum = List.reduce(Math.add, 0)
+
 totalEffort :: Task -> Integer
 export totalEffort = pipe(
   effort,
-  List.reduce(Math.add, 0),
+  sum,
 )
 
 parseFile :: String -> List ParsedTask
@@ -79,6 +82,7 @@ export parseFile = pipe(
   map(
     pipe(
       String.split(","),
+      List.reject(String.isEmpty),
       where {
         [name, d, ...effort] =>
           ParsedTask(name, d, effort)
@@ -88,6 +92,7 @@ export parseFile = pipe(
       },
     ),
   ),
+  List.reject(equals(Unparseable)),
 )
 
 parse :: String -> List Task
@@ -146,7 +151,6 @@ export aggregateTopics = List.reduce(
   Dict.empty,
 )
 
-sum = List.reduce(Math.add, 0)
 
 summarizeTopic :: AggregatedTopic -> String
 export summarizeTopic = where {

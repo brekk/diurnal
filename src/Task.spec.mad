@@ -1,0 +1,68 @@
+import { DateTime } from "Date"
+
+import {
+  Impossible,
+  ParsedTask,
+  Task,
+  Unparseable,
+  aggregateByDay,
+  aggregateByTopic,
+  date,
+  effort,
+  parse,
+  parseFile,
+  reify,
+  topic,
+  totalEffort,
+} from "@/Task"
+import { asyncReport, report } from "@/Test"
+
+
+
+report(topic, "topic", [#[Task("a", DateTime(0), []), "a"], #[Impossible, "?"]])
+report(date, "date", [#[Task("a", DateTime(0), []), DateTime(0)], #[Impossible, DateTime(0)]])
+report(effort, "effort", [#[Task("a", DateTime(0), []), []], #[Impossible, []]])
+report(totalEffort, "totalEffort", [#[Task("a", DateTime(0), [1, 2, 3, 4, 5, 6, 7, 8]), 36]])
+
+report(
+  parseFile,
+  "parseFile",
+  [
+    #["", []],
+    #["\n,", []],
+    #["cool", []],
+    #["cool,2024-07-28", [ParsedTask("cool", "2024-07-28", [])]],
+    #["cool,2024-07-28,1", [ParsedTask("cool", "2024-07-28", ["1"])]],
+    #["cool,2024-07-28,1,2,3", [ParsedTask("cool", "2024-07-28", ["1", "2", "3"])]],
+  ],
+)
+
+report(
+  reify,
+  "reify",
+  [
+    #[Unparseable, Impossible],
+    #[ParsedTask("cool", "2024-07-28", []), Task("cool", DateTime(1722124800000), [])],
+    #[ParsedTask("cool", "2024-07-28", ["1"]), Task("cool", DateTime(1722124800000), [1])],
+  ],
+)
+
+report(parse, "parse", [#["", []]])
+
+report(
+  aggregateByDay,
+  "aggregateByDay",
+  [
+    #[Task("yo", DateTime(100), [1, 2, 3, 4, 5]), #["yo", [1, 2, 3, 4, 5]]],
+    #[Impossible, #["Unknown", []]],
+  ],
+)
+
+report(
+  aggregateByTopic,
+  "aggregateByTopic",
+  [
+    #[Task("yo", DateTime(100), [1, 2, 3, 4, 5]), #[DateTime(100), [1, 2, 3, 4, 5]]],
+    #[Impossible, #[DateTime(0), []]],
+  ],
+)
