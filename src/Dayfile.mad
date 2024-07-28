@@ -8,7 +8,7 @@ import List from "List"
 import String from "String"
 import Wish from "Wish"
 
-import { ParsedTask, Unparseable } from "@/Task"
+import { ParsedTask, Unparseable, parse } from "@/Task"
 
 
 
@@ -19,22 +19,5 @@ task,date,minutes,of,effort
 read :: String -> Wish Error (List ParsedTask)
 export read = pipe(
   File.read,
-  map(
-    pipe(
-      String.split("\n"),
-      List.reject(String.isEmpty),
-      map(
-        pipe(
-          String.split(","),
-          where {
-            [name, date, ...effort] =>
-              ParsedTask(name, date, effort)
-
-            _ =>
-              Unparseable
-          },
-        ),
-      ),
-    ),
-  ),
+  map(parse),
 )

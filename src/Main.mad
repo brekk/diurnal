@@ -2,14 +2,22 @@ import { noop } from "Function"
 import IO from "IO"
 import Wish from "Wish"
 
+import Jam from "Jam"
+
 import D from "@/Diurnal"
 
 
 
 main = () => {
   pipe(
-    D.read,
-    map(map(D.reify)),
+    Jam.ensure($, ""),
+    map(
+      pipe(
+        Jam.value,
+        D.parse,
+        map(D.reify),
+      ),
+    ),
     Wish.fulfill(
       pipe(
         IO.pTrace("BARF!"),
